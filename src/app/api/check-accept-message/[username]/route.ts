@@ -18,10 +18,12 @@ export async function GET(request: Request, { params }: { params: { username: st
 
         return Response.json({
             success: true,
-            message:
+            message: "User found",
+            isAcceptingMessages: user.isAcceptingMessages
         })
 
     } catch (error) {
-        
+        console.error("failed to get user status to accept messages ",error)
+        return Response.json({success: false, message: "failed to get user status to accept messages"}, {status: 500})
     }
 }
