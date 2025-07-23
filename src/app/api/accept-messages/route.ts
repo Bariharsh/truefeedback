@@ -1,9 +1,7 @@
-i
-mport { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { User } from "next-auth"
+import { getServerSession, User } from "next-auth"
 export async function POST(request: Request) {
     await dbConnect()
 

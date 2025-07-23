@@ -18,10 +18,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/app/components/ui/form";
-import { Input } from "@/app/components/ui/input";
-import { Button } from "@/app/components/ui/button";
-import { Loader2 }  from "lucide-react";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const page = () => {
   const [username, setUsername] = useState("");
@@ -31,7 +31,6 @@ const page = () => {
   const debounced = useDebounceCallback(setUsername, 300);
   const router = useRouter();
 
-  // Zod implementation for form validation
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -76,27 +75,28 @@ const page = () => {
         toast.error(response.data.message);
       }
       router.replace(`/verify/${username}`);
-      setIsSubmitting(false);
     } catch (error) {
-      console.error("Error in Signup of user", error);
       const axiosError = error as AxiosError<ApiResponse>;
       const errorMessage = axiosError.response?.data.message;
       toast.error(errorMessage ?? "Error Signing Up");
+    } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+    <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white px-4">
+      <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-xl">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight lg:text-5xl mb-6">
-            Join TrueFeedback
+          <h1 className="text-4xl font-bold text-white tracking-tight lg:text-5xl mb-4">
+            Join Feednix
           </h1>
-          <p className="mb-4">
+          <p className="text-gray-400 text-base">
             Sign up to start your anonymous feedback session
           </p>
         </div>
-        <Form  {...form}>
+
+        <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
@@ -108,19 +108,26 @@ const page = () => {
                     <Input
                       placeholder="username"
                       {...field}
+                      className="bg-gray-700 text-white border-gray-600 focus:ring-indigo-500"
                       onChange={(e) => {
                         field.onChange(e);
-                        debounced(e.target.value)
+                        debounced(e.target.value);
                       }}
                     />
                   </FormControl>
-                    {
-                      isCheckingUsername && <Loader2 className="animate-spin"/>
-                    }
-                    <p className={`text-sm ${usernameMessage === "Username is Unique" ? 'text-green-500' : 'text-red-500'}`}>
-                      test {usernameMessage}
-                    </p>
-                  <FormDescription>
+                  {isCheckingUsername && (
+                    <Loader2 className="h-4 w-4 animate-spin text-indigo-400 mt-1" />
+                  )}
+                  <p
+                    className={`text-sm mt-1 ${
+                      usernameMessage === "Username is Unique"
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {usernameMessage}
+                  </p>
+                  <FormDescription className="text-gray-400">
                     This is your public display name
                   </FormDescription>
                   <FormMessage />
@@ -138,6 +145,7 @@ const page = () => {
                     <Input
                       placeholder="email"
                       {...field}
+                      className="bg-gray-700 text-white border-gray-600 focus:ring-indigo-500"
                     />
                   </FormControl>
                   <FormMessage />
@@ -156,27 +164,35 @@ const page = () => {
                       type="password"
                       placeholder="password"
                       {...field}
+                      className="bg-gray-700 text-white border-gray-600 focus:ring-indigo-500"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isSubmitting}>
-              {
-                isSubmitting ? (
-                  <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin"/> Please Wait
-                  </>
-                ) : ('Signup')
-              }
+
+            <Button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please Wait
+                </>
+              ) : (
+                "Signup"
+              )}
             </Button>
           </form>
         </Form>
+
         <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Already have an account?{" "}
-            <Link href="/sign-in" className="text-blue-600 hover:underline">
+            <Link href="/sign-in" className="text-indigo-400 hover:underline">
               Sign In
             </Link>
           </p>

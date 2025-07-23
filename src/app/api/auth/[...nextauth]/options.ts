@@ -4,12 +4,11 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
-
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: "credentials",
-      name: "Credentials",
+      name: "credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
@@ -28,7 +27,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error("User not found");
           }
 
-          if (user.isVerified) {
+          if (!user.isVerified) {
             throw new Error(
               "User is not verified. Please verify your account."
             );
@@ -60,12 +59,24 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
+    // async session({ session, token }) {
+    //   if (token) {
+    //     session.user._id = token._id;
+    //     session.user.isVerified = token.isVerified;
+    //     session.user.isAcceptingMessages = token.isAcceptingMessages;
+    //     session.user.username = token.username;
+    //   }
+    //   return session;
+    // },
     async session({ session, token }) {
-      if (token) {
-        session.user._id = token._id;
-        session.user.isVerified = token.isVerified;
-        session.user.isAcceptingMessages = token.isAcceptingMessages;
-        session.user.username = token.username;
+      if (token && session.user) {
+        session.user = {
+          ...session.user,
+          _id: token._id,
+          isVerified: token.isVerified,
+          isAcceptingMessages: token.isAcceptingMessages,
+          username: token.username,
+        };
       }
       return session;
     },

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import React from "react";
-import './globals.css';
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import AuthProvider from "@/context/AuthProvider";
+import AuthProvider from "@/context/AuthProvider"; // ✅ this is missing
 import { Toaster } from "@/components/ui/sonner";
-
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -35,16 +34,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} dark`}
-    >
-      <AuthProvider>
-        <body>
+    <>
+        <AuthProvider>
+          <Navbar />
           {children}
           <Toaster />
-        </body>
-      </AuthProvider>
-    </html>
+        </AuthProvider>
+    </>
   );
 }

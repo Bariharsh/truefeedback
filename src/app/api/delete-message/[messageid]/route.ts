@@ -3,11 +3,10 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
-import mongoose from "mongoose";
 
-export async function DELETE(request: Request, {params}: {params: {mesaageid: string}}) {
+export async function DELETE(request: Request, {params}: {params: {messageid: string}}) {
 
-  const messageId = params.mesaageid;
+  const messageId = params.messageid;
   await dbConnect();
   const session = await getServerSession(authOptions);
   const user: User = session?.user as User;
@@ -17,11 +16,6 @@ export async function DELETE(request: Request, {params}: {params: {mesaageid: st
       success: false,
       message: "Not Authorized"
     },{status: 401})
-    console.error("failed to get messages ", error);
-    return Response.json({
-        success: false,
-        message: "Failed to get messages",
-    },{status: 500})
   }
 
   try {
