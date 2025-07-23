@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export default function PublicProfilePage() {
           {
             role: "user",
             content:
-              "Give me 3 suggestions to send anonymously message. Format each suggestion like:\n1. message\n2. message\n3. message",
+              "Give me 4 suggestions to send anonymously message. Format each suggestion like:\n1. message\n2. message\n3. message\n4. message",
           },
         ],
       });
