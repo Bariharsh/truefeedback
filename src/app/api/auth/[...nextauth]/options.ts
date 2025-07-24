@@ -4,27 +4,38 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
+type AuthorizedUser = {
+  id: string;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  isAcceptingMessages: boolean;
+  username: string;
+};
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: "credentials",
-      name: "credentials",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
+        name: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: any): Promise<any> {
+      async authorize(credentials): Promise<AuthorizedUser | null>  {
         await dbConnect();
+        if (!credentials || !credentials.email || !credentials.password) {
+          throw new Error("Missing credentials");
+        }
         try {
           const user = await UserModel.findOne({
-            $or: [
-              { email: credentials.identifier },
-              { username: credentials.identifier },
-            ],
+            $or: [{ email: credentials.email }, { username: credentials.name }],
           });
 
           if (!user) {
             throw new Error("User not found");
+            return null;
           }
 
           if (!user.isVerified) {
@@ -37,13 +48,22 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
 
-          if (isPasswordCorrrect) {
-            return user;
-          } else {
-            throw new Error("Incorrect password");
+          if (!isPasswordCorrrect) {
+            return null
           }
-        } catch (error: any) {
-          throw new Error(error);
+          const authorizedUser: AuthorizedUser = {
+            id: user._id.toString(),
+            name: user.name, 
+            email: user.email,
+            isVerified: user.isVerified,
+            isAcceptingMessages: user.isAcceptingMessages,
+            username: user.username,
+          };
+          
+          return authorizedUser;
+        } catch (error: unknown) {
+          console.error("Error logging in:", error);
+          return null;
         }
       },
     }),

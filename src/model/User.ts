@@ -7,6 +7,18 @@ export interface Message extends Document {
     createdAt: Date;
 }
 
+// export interface SafeUser extends Document {
+//     _id: string;
+//     username: string;
+//     password: string;
+//     email: string;
+//     verifyCode: string; 
+//     verifyCodeExpire: Date;
+//     isVerified: boolean;
+//     isAcceptingMessages: boolean;
+
+// }
+
 const MessageSchema: Schema<Message> = new Schema({
     content: {
         type: String,
@@ -20,7 +32,9 @@ const MessageSchema: Schema<Message> = new Schema({
 })
 
 export interface User extends Document {
+    _id: string;
     username: string;
+    name: string;
     password: string;
     email: string;
     verifyCode: string; 
