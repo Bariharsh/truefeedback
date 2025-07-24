@@ -1,9 +1,11 @@
-// /api/check-accept-messages/[username]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest,NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
-export async function GET(req: Request, { params }: { params: { username: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { username: string } }
+) {
   await dbConnect();
 
   const user = await UserModel.findOne({ username: params.username });
