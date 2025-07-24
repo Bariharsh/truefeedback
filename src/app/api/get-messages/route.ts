@@ -19,7 +19,13 @@ export async function GET() {
   const user = session.user as User;
 
   try {
+    console.log("Session user._id:", user._id, typeof user._id);
     const userId = new mongoose.Types.ObjectId(user._id);
+    
+    console.log("Querying for userId:", userId);
+
+    const foundUser = await UserModel.findById(userId);
+    console.log("Found user:", foundUser);
 
     const result = await UserModel.aggregate([
       { $match: { _id: userId } },
@@ -32,6 +38,7 @@ export async function GET() {
         },
       },
     ]);
+    console.log("Result:", result);
 
     if (!result || result.length === 0) {
       return Response.json(

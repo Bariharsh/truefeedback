@@ -1,12 +1,12 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { signInSchema } from "@/schemas/signInSchema";
+import  * as z  from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-
+import { signIn } from "next-auth/react";
 import {
   Form,
   FormControl,
@@ -17,37 +17,39 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signIn } from "next-auth/react";
-import { signInSchema } from "@/schemas/signInSchema";
 
 const SigninPage = () => {
-  const router = useRouter();
+  
+
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       identifier: "",
       password: "",
-    },
-  });
+    }
+  })
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    const result = await signIn("credentials", {
+    
+    const result = await signIn('credentials',{
       redirect: false,
       identifier: data.identifier,
       password: data.password,
-    });
+    })
 
-    if (result?.error) {
-      if (result.error == "CredentialsSignin") {
-        toast.error("Login Failed. Invalid username or password");
-      } else {
-        toast.error(result.error);
+    if(result?.error){
+      if(result.error === "CredentialsSignin"){
+        toast.error("Invalid credentials")
       }
+    } else{
+      toast.error(result?.error)
     }
 
-    if (result?.url) {
-      router.replace("/dashboard");
+    if(result?.url) {
+      toast.success("Login successfull")
+      router.replace('/dashboard')
     }
   };
 
@@ -73,7 +75,7 @@ const SigninPage = () => {
                   <FormControl>
                     <Input
                       className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                      placeholder="email/username"
+                      placeholder="email or username"
                       {...field}
                     />
                   </FormControl>
@@ -81,7 +83,6 @@ const SigninPage = () => {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="password"

@@ -6,6 +6,7 @@ import UserModel from "@/model/User";
 
 type AuthorizedUser = {
   id: string;
+  _id: string;
   name: string;
   email: string;
   isVerified: boolean;
@@ -19,50 +20,51 @@ export const authOptions: NextAuthOptions = {
       id: "credentials",
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
-        name: { label: "Username", type: "text" },
+        identifier: { label: "username or email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials): Promise<AuthorizedUser | null>  {
+      async authorize(credentials): Promise<AuthorizedUser | null> {
         await dbConnect();
-        if (!credentials || !credentials.email || !credentials.password) {
-          throw new Error("Missing credentials");
-        }
         try {
+          const identifier = credentials?.identifier;
+          const password = credentials?.password;
+
+          if (!identifier || !password) {
+            throw new Error("Username and Password are required");
+          }
+
           const user = await UserModel.findOne({
-            $or: [{ email: credentials.email }, { username: credentials.name }],
+            $or: [{ email: identifier }, { username: identifier }],
           });
 
           if (!user) {
-            throw new Error("User not found");
             return null;
           }
 
           if (!user.isVerified) {
-            throw new Error(
-              "User is not verified. Please verify your account."
-            );
+            return null;
           }
+
           const isPasswordCorrrect = await bcrypt.compare(
-            credentials.password,
+            password,
             user.password
           );
 
           if (!isPasswordCorrrect) {
-            return null
+            return null;
           }
-          const authorizedUser: AuthorizedUser = {
+
+          return {
             id: user._id.toString(),
-            name: user.name, 
+            _id: user._id.toString(),
+            name: user.username,
             email: user.email,
             isVerified: user.isVerified,
             isAcceptingMessages: user.isAcceptingMessages,
             username: user.username,
           };
-          
-          return authorizedUser;
-        } catch (error: unknown) {
-          console.error("Error logging in:", error);
+        } catch (err) {
+          console.error("Authorize error:", err);
           return null;
         }
       },
@@ -71,12 +73,12 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token._id = user._id?.toString();
+        token.id = user.id || user._id; // Always set id
+        token._id = user._id || user.id; // Always set _id
         token.isVerified = user.isVerified;
         token.isAcceptingMessages = user.isAcceptingMessages;
         token.username = user.username;
       }
-
       return token;
     },
     // async session({ session, token }) {
@@ -89,13 +91,14 @@ export const authOptions: NextAuthOptions = {
     //   return session;
     // },
     async session({ session, token }) {
-      if (token && session.user) {
+      if (token) {
         session.user = {
-          ...session.user,
-          _id: token._id,
+          _id: token._id || token.id,
           isVerified: token.isVerified,
           isAcceptingMessages: token.isAcceptingMessages,
           username: token.username,
+          email: session.user?.email || "",
+          name: session.user?.name || "",
         };
       }
       return session;
@@ -107,5 +110,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  debug: true,
   secret: process.env.NEXTAUTH_SECRET,
 };
