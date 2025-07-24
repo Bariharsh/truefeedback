@@ -21,9 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Message } from "@/model/User";
-import { toast } from "sonner";
-import { ApiResponse } from "@/types/ApiResponse";
-import axios, { AxiosError } from "axios";
+// import { toast } from "sonner";
+// import { ApiResponse } from "@/types/ApiResponse";
+// import axios, { AxiosError } from "axios";
 
 type MessageCardProps = {
   message: Message;
@@ -31,17 +31,17 @@ type MessageCardProps = {
 };
 
 const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
-  const handleDeleteConfirm = async () => {
-    try {
-      await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
-      toast.success("Message deleted successfully");
-      onMessageDelete(message._id);
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(
-        axiosError.response?.data.message || "Failed to delete message");
-    }
-  };
+  // const handleDeleteConfirm = async () => {
+  //   try {
+  //     await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
+  //     toast.success("Message deleted successfully");
+  //     onMessageDelete(message._id);
+  //   } catch (error) {
+  //     const axiosError = error as AxiosError<ApiResponse>;
+  //     toast.error(
+  //       axiosError.response?.data.message || "Failed to delete message");
+  //   }
+  // };
 
   return (
     <Card className="relative shadow-md dark:bg-gray-800">

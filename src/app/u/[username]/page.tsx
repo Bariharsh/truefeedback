@@ -1,10 +1,11 @@
 "use client";
-import React, {  useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
+import { Separator } from "@/components/ui/separator";
 
 export default function PublicProfilePage() {
   const { username } = useParams();
@@ -13,7 +14,8 @@ export default function PublicProfilePage() {
   const [suggestions, setSuggestions] = useState<{ content: string }[]>([]);
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [IsSend, setIsSend] = useState(false);
-  // const [acceptMessages, setAcceptMessages] = useState(true);
+  const [canAcceptMessage, setCanAcceptMessage] = useState(true);
+  const [loadingStatus, setLoadingStatus] = useState(true);
 
   const handleSuggestion = async () => {
     setIsSuggestionLoading(true);
@@ -56,11 +58,11 @@ export default function PublicProfilePage() {
   const handleSend = async () => {
     setIsSend(true);
     setError("");
-    // if (!acceptMessages) {
-    //   toast.error("This user is not accepting messages.");
-    //   setIsSend(false);
-    //   return;
-    // }
+
+    if (!canAcceptMessage) {
+      toast.error("Please accept messages before sending");
+    }
+
     try {
       await axios.post<ApiResponse>("/api/send-message", {
         username,
@@ -78,81 +80,125 @@ export default function PublicProfilePage() {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchAcceptanceStatus = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `/api/check-accept-messages/${username}`
-  //       );
-  //       setAcceptMessages(response.data.acceptMessages);
-  //     } catch (error) {
-  //       const axiosError = error as AxiosError<ApiResponse>;
-  //       console.error("Error fetching acceptance status:", axiosError);
-  //       setAcceptMessages(false);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchAcceptStatus = async () => {
+      try {
+        const response = await axios.get(
+          `/api/check-accept-message/${username}`
+        );
+        setCanAcceptMessage(response.data.canAcceptMessages);
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiResponse>;
+        toast.error(
+          axiosError.response?.data.message || "Failed to check accept messages"
+        );
+      } finally {
+        setLoadingStatus(false);
+      }
+    };
 
-  //   if (username) {
-  //     fetchAcceptanceStatus();
-  //   }
-  // }, [username]);
+    fetchAcceptStatus();
+  }, [username]);
 
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white px-4 py-10 flex flex-col items-center">
-      <div className="w-full max-w-2xl bg-zinc-900 p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          Public Profile Link
-        </h1>
-
-        <p className="text-pink-500 text-sm mb-2">
-          Send Anonymous Message to @{username}
-        </p>
-
-        <textarea
-          className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-pink-500 text-white resize-none"
-          rows={3}
-          placeholder="Type your message here..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-
-        <div className="mt-4 flex justify-end">
-          <Button onClick={handleSend} disabled={IsSend}>
-            Send It
-          </Button>
-        </div>
-
-        <hr className="my-6 border-zinc-700" />
-
-        <div className="text-center mb-4">
-          <Button
-            variant="outline"
-            onClick={handleSuggestion}
-            disabled={isSuggestionLoading}
-          >
-            {isSuggestionLoading ? "Loading..." : "Suggest Messages"}
-          </Button>
-          <p className="mt-2 text-gray-400 text-sm">
-            Click on any message below to select it.
+  if (loadingStatus) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-900 text-white">
+        <div className="flex items-center gap-3 text-blue-400 bg-gray-800 p-4 rounded-md shadow">
+          <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            ></path>
+          </svg>
+          <p className="font-medium text-white">
+            Checking messaging settings...
           </p>
         </div>
-
-        {suggestions.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-            {suggestions.map((suggestion, index) => (
-              <div
-                key={index}
-                onClick={() => setMessage(suggestion.content)}
-                className="cursor-pointer bg-zinc-800 border border-zinc-700 rounded-lg p-3 hover:bg-zinc-700 transition"
-              >
-                {suggestion.content}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+    );
+  }
+
+  return (
+  <div className="min-h-screen bg-zinc-950 text-white px-4 py-12 flex flex-col items-center">
+    <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-xl">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center text-white">
+        Public Profile
+      </h1>
+
+      <p className="text-pink-500 text-sm mb-6 text-center">
+        Send Anonymous Message to{" "}
+        <span className="font-semibold">@{username}</span>
+      </p>
+
+      <textarea
+        className="w-full p-4 rounded-xl bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-pink-500 text-white resize-none transition disabled:opacity-50"
+        rows={4}
+        placeholder={
+          canAcceptMessage
+            ? "Type your anonymous message here..."
+            : "Messaging is turned off for this user."
+        }
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        disabled={!canAcceptMessage}
+      />
+
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+      <div className="mt-4 flex justify-end">
+        <Button
+          onClick={handleSend}
+          disabled={IsSend || !canAcceptMessage || message.trim() === ""}
+        >
+          {canAcceptMessage ? "Send It" : "Messaging Disabled"}
+        </Button>
+      </div>
+
+      {!canAcceptMessage && (
+        <p className="text-red-400 text-sm mt-3 text-center">
+          Messaging has been disabled..
+        </p>
+      )}
+
+      <Separator className="my-8 bg-zinc-700" />
+
+      <div className="text-center mb-4">
+        <Button
+          variant="outline"
+          onClick={handleSuggestion}
+          disabled={isSuggestionLoading || !canAcceptMessage}
+        >
+          {isSuggestionLoading ? "Loading..." : "Suggest Messages"}
+        </Button>
+        <p className="mt-2 text-zinc-400 text-sm">
+          Click any suggestion to autofill the message box.
+        </p>
+      </div>
+
+      {suggestions.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              onClick={() => setMessage(suggestion.content)}
+              className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg p-4 transition"
+            >
+              {suggestion.content}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
+
 }

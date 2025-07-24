@@ -130,13 +130,24 @@ function DashboardPage() {
     toast.success("Profile URL copied to clipboard");
   };
 
-  if (!session || !session.user) {
-    return (
-      <div className="text-center mt-20 text-gray-700 dark:text-gray-200">
-        Please login
+if (!session || !session.user) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white px-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
+        <h2 className="text-3xl font-bold mb-4">Access Denied</h2>
+        <p className="text-zinc-400 mb-6">
+          You must be logged in to view this page.
+        </p>
+        <a
+          href="/login"
+          className="inline-block px-6 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-medium transition"
+        >
+          Login Now
+        </a>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-white dark:bg-gray-900 rounded w-full max-w-6xl shadow">

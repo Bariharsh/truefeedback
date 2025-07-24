@@ -5,7 +5,7 @@ import * as z from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
 
 import {
   Form,
@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 import { signInSchema } from "@/schemas/signInSchema";
 
-const page = () => {
+const SigninPage = () => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -122,4 +122,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default SigninPage;

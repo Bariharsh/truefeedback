@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 import React from "react";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
-import AuthProvider from "@/context/AuthProvider"; // ✅ this is missing
+// import { Geist, Geist_Mono, Inter } from "next/font/google";
+import AuthProvider from "@/context/AuthProvider"; 
 import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/Navbar";
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-  display: "swap",
-});
+// const geistSans = Geist({
+//   subsets: ["latin"],
+//   variable: "--font-geist-sans",
+//   display: "swap",
+// });
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-});
+// const geistMono = Geist_Mono({
+//   subsets: ["latin"],
+//   variable: "--font-geist-mono",
+//   display: "swap",
+// });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+// const inter = Inter({
+//   subsets: ["latin"],
+//   variable: "--font-inter",
+//   display: "swap",
+// });
 
 export const metadata: Metadata = {
   title: "Create Next App",
