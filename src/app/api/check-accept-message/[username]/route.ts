@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
-export async function GET(req: NextRequest, context: { params: Record<string, string> }) {
-  const { username } = context.params;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(req: NextRequest, { params }: any) {
+  const { username } = params;
 
   await dbConnect();
 
