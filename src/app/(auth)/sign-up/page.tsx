@@ -47,7 +47,7 @@ const SignupPage = () => {
         setUsernameMessage("");
         try {
           const response = await axios.get(
-            `${process.env.NEXTAUTH_URL}/api/check-username-unique?username=${username}`
+            `/api/check-username-unique?username=${username}`
           );
 
           setUsernameMessage(response.data.message);
