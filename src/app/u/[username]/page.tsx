@@ -20,7 +20,7 @@ export default function PublicProfilePage() {
   const handleSuggestion = async () => {
     setIsSuggestionLoading(true);
     try {
-      const response = await axios.post<ApiResponse>(`${process.env.NEXTAUTH_URL}/api/suggest-messages`, {
+      const response = await axios.post<ApiResponse>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/suggest-messages`, {
         messages: [
           {
             role: "system",
@@ -64,7 +64,7 @@ export default function PublicProfilePage() {
     }
 
     try {
-      await axios.post<ApiResponse>(`${process.env.NEXTAUTH_URL}/api/send-message`, {
+      await axios.post<ApiResponse>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-message`, {
         username,
         content: message,
       });
@@ -84,7 +84,7 @@ export default function PublicProfilePage() {
     const fetchAcceptStatus = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXTAUTH_URL}/api/check-accept-message/${username}`
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/check-accept-message/${username}`
         );
         setCanAcceptMessage(response.data.canAcceptMessages);
       } catch (error) {

@@ -6,6 +6,8 @@ import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 export async function POST(request: Request) {
   await dbConnect();
 
+  // console.log(process.env.NEXTAUTH_URL)
+
   try {
     const { username, email, password } = await request.json();
 
