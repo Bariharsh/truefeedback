@@ -2,10 +2,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signInSchema } from "@/schemas/signInSchema";
-import  * as z  from "zod";
+import * as z from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   Form,
@@ -19,37 +19,35 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const SigninPage = () => {
-  
-
-  const router = useRouter()
+  // const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       identifier: "",
       password: "",
-    }
-  })
+    },
+  });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    
-    const result = await signIn('credentials',{
+    const result = await signIn("credentials", {
       redirect: false,
       identifier: data.identifier,
       password: data.password,
-    })
+    });
 
-    if(result?.error){
-      if(result.error === "CredentialsSignin"){
-        toast.error("Invalid credentials")
+    if (result?.error) {
+      if (result.error === "CredentialsSignin") {
+        toast.error("Invalid credentials");
+      } else {
+        toast.error(result?.error);
       }
-    } else{
-      toast.error(result?.error)
+      return;
     }
 
-    if(result?.url) {
-      toast.success("Login successfull")
-      router.replace('/dashboard')
+    if (result?.url) {
+      toast.success("Login successfull");
+      window.location.href = "/dashboard";
     }
   };
 
@@ -71,7 +69,9 @@ const SigninPage = () => {
               name="identifier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Email/Username</FormLabel>
+                  <FormLabel className="text-gray-300">
+                    Email/Username
+                  </FormLabel>
                   <FormControl>
                     <Input
                       className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
@@ -106,7 +106,7 @@ const SigninPage = () => {
               className="w-full bg-indigo-600 hover:bg-indigo-500 text-white"
               disabled={form.formState.isSubmitting}
             >
-              Sign In
+              Signin
             </Button>
           </form>
         </Form>

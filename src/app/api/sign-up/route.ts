@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
       await newUser.save();
     }
-
+    console.log("email:", email)
     const emailResponse = await sendVerificationEmail(
       email,
       username,
