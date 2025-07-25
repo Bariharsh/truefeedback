@@ -67,7 +67,7 @@ const SignupPage = () => {
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     setIsSubmitting(true);
     try {
-      const response = await axios.post<ApiResponse>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/sign-up`, data);
+      const response = await axios.post<ApiResponse>(`/api/sign-up`, data);
       if (response.data.success) {
         toast.success(response.data.message);
         router.replace("sign-in");
