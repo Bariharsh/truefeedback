@@ -47,7 +47,7 @@ const SignupPage = () => {
         setUsernameMessage("");
         try {
           const response = await axios.get(
-            `/api/check-username-unique?username=${username}`
+            `${process.env.NEXTAUTH_URL}/api/check-username-unique?username=${username}`
           );
 
           setUsernameMessage(response.data.message);
@@ -67,7 +67,7 @@ const SignupPage = () => {
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     setIsSubmitting(true);
     try {
-      const response = await axios.post<ApiResponse>("/api/sign-up", data);
+      const response = await axios.post<ApiResponse>(`${process.env.NEXTAUTH_URL}/api/sign-up`, data);
       if (response.data.success) {
         toast.success(response.data.message);
         router.replace("sign-in");
