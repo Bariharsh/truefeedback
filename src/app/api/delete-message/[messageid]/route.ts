@@ -4,11 +4,11 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export async function DELETE(request: Request, { params }: any) {
+export async function DELETE(request: Request, context: { params: { messageid: string }}) {
 
-  const messageId = params.messageid;
+  
+  // console.log("Deleted message id:",messageid)
   await dbConnect();
   const session = await getServerSession(authOptions);
   const user: User = session?.user as User;
@@ -19,6 +19,8 @@ export async function DELETE(request: Request, { params }: any) {
       message: "Not Authorized"
     },{status: 401})
   }
+
+  const messageId = await context.params.messageid;
 
   try {
     const updateResult = await UserModel.updateOne(

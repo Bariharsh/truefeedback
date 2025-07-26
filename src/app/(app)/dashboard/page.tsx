@@ -26,7 +26,7 @@ function DashboardPage() {
 
   const handleDeleteConfirm = async (messageId: string) => {
     try {
-      await axios.delete<ApiResponse>(`api/delete-message/${messageId}`);
+      await axios.delete<ApiResponse>(`/api/delete-message/${messageId}`);
       toast.success("Message deleted successfully");
       handleDeleteMessage(messageId);
     } catch (error) {
