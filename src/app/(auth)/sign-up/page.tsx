@@ -120,7 +120,7 @@ const SignupPage = () => {
                   )}
                   <p
                     className={`text-sm mt-1 ${
-                      usernameMessage === "Username is Unique"
+                      usernameMessage === "Username is available"
                         ? "text-green-400"
                         : "text-red-400"
                     }`}
