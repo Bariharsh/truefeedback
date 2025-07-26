@@ -1,21 +1,23 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Message } from "@/model/User";
-import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
-import { ApiResponse } from "@/types/ApiResponse";
+
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
-import { User } from "next-auth";
-import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, RefreshCcw } from "lucide-react";
 import MessageCard from "@/components/MessageCard";
-import { Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
+
+import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
+import { Message } from "@/model/User";
+import { ApiResponse } from "@/types/ApiResponse";
+import { User } from "next-auth";
 
 function DashboardPage() {
   const [profileUrl, setProfileUrl] = useState("");
@@ -25,6 +27,19 @@ function DashboardPage() {
   const [isCopying, setIsCopying] = useState(false);
 
   const router = useRouter();
+  const { data: session } = useSession();
+
+  const form = useForm({
+    resolver: zodResolver(acceptMessageSchema),
+  });
+  const { control, watch, setValue } = form;
+  const acceptMessages = watch("acceptMessages");
+
+  const handleDeleteMessage = (messageId: string) => {
+    setMessages((prevMessages) =>
+      prevMessages.filter((message) => message._id !== messageId)
+    );
+  };
 
   const handleDeleteConfirm = async (messageId: string) => {
     try {
@@ -38,21 +53,6 @@ function DashboardPage() {
       );
     }
   };
-
-  const handleDeleteMessage = (messageId: string) => {
-    setMessages((prevMessages) =>
-      prevMessages.filter((message) => message._id !== messageId)
-    );
-  };
-
-  const { data: session } = useSession();
-
-  const form = useForm({
-    resolver: zodResolver(acceptMessageSchema),
-  });
-
-  const { control, watch, setValue } = form;
-  const acceptMessages = watch("acceptMessages");
 
   const fetchAcceptMessage = useCallback(async () => {
     try {
@@ -86,20 +86,17 @@ function DashboardPage() {
         setIsLoading(false);
       }
     },
-    [setIsLoading, setMessages]
+    [setMessages]
   );
 
   useEffect(() => {
     if (!session || !session.user) return;
     fetchMessages(false);
     fetchAcceptMessage();
-  }, [session, setValue, fetchAcceptMessage, fetchMessages]);
+  }, [session, fetchAcceptMessage, fetchMessages]);
 
   const handleSwitchChange = async () => {
-    // Optimistically set new value
     const newStatus = !acceptMessages;
-
-    // Update immediately (optimistic UI)
     setValue("acceptMessages", newStatus);
     setIsSwitchLoading(true);
 
@@ -107,14 +104,9 @@ function DashboardPage() {
       const response = await axios.post<ApiResponse>("/api/accept-messages", {
         acceptMessages: newStatus,
       });
-
-      toast.success(
-        response.data.message || "Message acceptance status updated"
-      );
+      toast.success(response.data.message || "Status updated");
     } catch (error) {
-      // Revert the change on error
       setValue("acceptMessages", !newStatus);
-
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error(
         axiosError.response?.data.message || "Failed to update status"
@@ -139,16 +131,11 @@ function DashboardPage() {
     setIsCopying(true);
     try {
       navigator.clipboard.writeText(profileUrl);
-      toast.success("Profile URL copied to clipboard");
-
-      setTimeout(() => {
-        router.push(`/u/${username}`);
-      }, 1200);
+      toast.success("Profile URL copied to clipboard and Redirecting to your Profile");
+      setTimeout(() => router.push(`/u/${username}`), 1200);
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(
-        axiosError.response?.data.message || "Failed to update status"
-      );
+      console.error("Failed to copy URL", error);
+      toast.error("Failed to copy URL");
     } finally {
       setIsCopying(false);
     }
@@ -193,11 +180,6 @@ function DashboardPage() {
           <Button onClick={copyToClipboard} disabled={isCopying}>
             {isCopying ? "Redirecting..." : "Copy"}
           </Button>
-          {isCopying && (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Redirecting to Your Profile...
-            </p>
-          )}
         </div>
       </div>
 

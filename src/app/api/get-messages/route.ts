@@ -21,7 +21,7 @@ export async function GET() {
   try {
     console.log("Session user._id:", user._id, typeof user._id);
     const userId = new mongoose.Types.ObjectId(user._id);
-    
+
     console.log("Querying for userId:", userId);
 
     const foundUser = await UserModel.findById(userId);
@@ -40,18 +40,14 @@ export async function GET() {
     ]);
     console.log("Result:", result);
 
-    if (!result || result.length === 0) {
+    if (!result?.[0]?.messages?.length) {
       return Response.json(
-        { success: false, message: "No messages found for user" },
-        { status: 404 }
+        { success: false, message: "No Messages Found" },
       );
     }
 
     return Response.json(
-      {
-        success: true,
-        messages: result[0].messages,
-      },
+      { success: true, messages: result[0].messages },
       { status: 200 }
     );
   } catch (error) {
