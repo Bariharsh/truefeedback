@@ -14,8 +14,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, RefreshCcw } from "lucide-react";
 import MessageCard from "@/components/MessageCard";
-import Link from "next/link";
 import { Controller } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 function DashboardPage() {
   const [profileUrl, setProfileUrl] = useState("");
@@ -23,6 +23,8 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+
+  const router = useRouter();
 
   const handleDeleteConfirm = async (messageId: string) => {
     try {
@@ -138,6 +140,10 @@ function DashboardPage() {
     try {
       navigator.clipboard.writeText(profileUrl);
       toast.success("Profile URL copied to clipboard");
+
+      setTimeout(() => {
+        router.push(`/u/${username}`);
+      }, 1200);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error(
@@ -184,10 +190,14 @@ function DashboardPage() {
             disabled
             className="border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded p-2 flex-grow mr-2"
           />
-          <Link href={`/u/${username}`}>
-            <Button onClick={copyToClipboard}>Copy</Button>
-            {isCopying && <p className="ml-2 text-gray-800 dark:text-gray-200">Redirecting to Your Profile</p>}
-          </Link>
+          <Button onClick={copyToClipboard} disabled={isCopying}>
+            {isCopying ? "Redirecting..." : "Copy"}
+          </Button>
+          {isCopying && (
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Redirecting to Your Profile...
+            </p>
+          )}
         </div>
       </div>
 

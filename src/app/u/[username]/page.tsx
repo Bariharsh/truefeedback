@@ -18,6 +18,9 @@ export default function PublicProfilePage() {
   const [canAcceptMessage, setCanAcceptMessage] = useState(true);
   const [loadingStatus, setLoadingStatus] = useState(true);
 
+
+
+
   const handleSuggestion = async () => {
     setIsSuggestionLoading(true);
     try {
