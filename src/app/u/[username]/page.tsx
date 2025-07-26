@@ -135,8 +135,7 @@ export default function PublicProfilePage() {
       </h1>
 
       <p className="text-pink-500 text-sm mb-6 text-center">
-        Send Anonymous Message to{" "}
-        <span className="font-semibold">@{username}</span>
+        Send Anonymous Message 
       </p>
 
       <textarea
