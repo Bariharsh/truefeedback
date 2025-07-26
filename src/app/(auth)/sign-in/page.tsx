@@ -18,8 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+
 const SigninPage = () => {
-  // const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -35,6 +35,8 @@ const SigninPage = () => {
       identifier: data.identifier,
       password: data.password,
     });
+
+    
 
     if (result?.error) {
       if (result.error === "CredentialsSignin") {

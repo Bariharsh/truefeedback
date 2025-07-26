@@ -15,12 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2, RefreshCcw } from "lucide-react";
 import MessageCard from "@/components/MessageCard";
 import Link from "next/link";
+import { Controller } from "react-hook-form";
 
 function DashboardPage() {
   const [profileUrl, setProfileUrl] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
 
   const handleDeleteConfirm = async (messageId: string) => {
     try {
@@ -47,11 +49,10 @@ function DashboardPage() {
     resolver: zodResolver(acceptMessageSchema),
   });
 
-  const { register, watch, setValue } = form;
+  const { control, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
 
   const fetchAcceptMessage = useCallback(async () => {
-    setIsSwitchLoading(true);
     try {
       const response = await axios.get<ApiResponse>("/api/accept-messages");
       setValue("acceptMessages", response.data.isAcceptingMessages ?? false);
@@ -61,15 +62,12 @@ function DashboardPage() {
         axiosError.response?.data.message ||
           "Failed to fetch accept messages status"
       );
-    } finally {
-      setIsSwitchLoading(false);
     }
   }, [setValue]);
 
   const fetchMessages = useCallback(
     async (refresh: boolean) => {
       setIsLoading(true);
-      setIsSwitchLoading(false);
       try {
         const response = await axios.get<ApiResponse>("/api/get-messages");
         setMessages(response.data.messages || []);
@@ -84,7 +82,6 @@ function DashboardPage() {
         );
       } finally {
         setIsLoading(false);
-        setIsSwitchLoading(false);
       }
     },
     [setIsLoading, setMessages]
@@ -97,20 +94,31 @@ function DashboardPage() {
   }, [session, setValue, fetchAcceptMessage, fetchMessages]);
 
   const handleSwitchChange = async () => {
+    // Optimistically set new value
+    const newStatus = !acceptMessages;
+
+    // Update immediately (optimistic UI)
+    setValue("acceptMessages", newStatus);
+    setIsSwitchLoading(true);
+
     try {
       const response = await axios.post<ApiResponse>("/api/accept-messages", {
-        acceptMessages: !acceptMessages,
+        acceptMessages: newStatus,
       });
-      setValue("acceptMessages", !acceptMessages);
+
       toast.success(
-        response.data.message ||
-          "Messages acceptance status updated successfully"
+        response.data.message || "Message acceptance status updated"
       );
     } catch (error) {
+      // Revert the change on error
+      setValue("acceptMessages", !newStatus);
+
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error(
         axiosError.response?.data.message || "Failed to update status"
       );
+    } finally {
+      setIsSwitchLoading(false);
     }
   };
 
@@ -126,28 +134,38 @@ function DashboardPage() {
   }, [session]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(profileUrl);
-    toast.success("Profile URL copied to clipboard");
+    setIsCopying(true);
+    try {
+      navigator.clipboard.writeText(profileUrl);
+      toast.success("Profile URL copied to clipboard");
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast.error(
+        axiosError.response?.data.message || "Failed to update status"
+      );
+    } finally {
+      setIsCopying(false);
+    }
   };
 
-if (!session || !session.user) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white px-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
-        <h2 className="text-3xl font-bold mb-4">Access Denied</h2>
-        <p className="text-zinc-400 mb-6">
-          You must be logged in to view this page.
-        </p>
-        <a
-          href="/login"
-          className="inline-block px-6 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-medium transition"
-        >
-          Login Now
-        </a>
+  if (!session || !session.user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white px-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
+          <h2 className="text-3xl font-bold mb-4">Access Denied</h2>
+          <p className="text-zinc-400 mb-6">
+            You must be logged in to view this page.
+          </p>
+          <a
+            href="/login"
+            className="inline-block px-6 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-medium transition"
+          >
+            Login Now
+          </a>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-white dark:bg-gray-900 rounded w-full max-w-6xl shadow">
@@ -168,19 +186,25 @@ if (!session || !session.user) {
           />
           <Link href={`/u/${username}`}>
             <Button onClick={copyToClipboard}>Copy</Button>
+            {isCopying && <p className="ml-2 text-gray-800 dark:text-gray-200">Redirecting to Your Profile</p>}
           </Link>
         </div>
       </div>
 
       <div className="mb-4">
-        <Switch
-          {...register("acceptMessages")}
-          checked={acceptMessages}
-          onCheckedChange={handleSwitchChange}
-          disabled={isSwitchLoading}
+        <Controller
+          name="acceptMessages"
+          control={control}
+          render={({ field }) => (
+            <Switch
+              checked={field.value}
+              onCheckedChange={handleSwitchChange}
+              disabled={isSwitchLoading}
+            />
+          )}
         />
         <span className="ml-2 text-gray-800 dark:text-gray-200">
-          Accept Messages: {acceptMessages ? "On" : "Off"}
+          Accept Messages: {watch("acceptMessages") ? "On" : "Off"}
         </span>
       </div>
 
