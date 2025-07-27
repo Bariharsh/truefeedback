@@ -64,3 +64,4 @@ export async function POST(request: Request) {
     );
   }
 }
+export const POST_api_verify_code = POST;

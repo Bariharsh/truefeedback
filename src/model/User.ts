@@ -3,8 +3,10 @@ import mongoose,{ Schema, Document } from "mongoose";
 
 export interface Message extends Document {
     _id: string;
+    messageId: string;
     content: string;
     createdAt: Date;
+    fromUser: string;
 }
 
 // export interface SafeUser extends Document {

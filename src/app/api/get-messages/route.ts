@@ -2,8 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { User } from "next-auth";
-import mongoose from "mongoose";
+
 
 export async function GET() {
   await dbConnect();
@@ -16,42 +15,31 @@ export async function GET() {
     );
   }
 
-  const user = session.user as User;
-
   try {
-    console.log("Session user._id:", user._id, typeof user._id);
-    const userId = new mongoose.Types.ObjectId(user._id);
-
-    console.log("Querying for userId:", userId);
-
-    const foundUser = await UserModel.findById(userId);
-    console.log("Found user:", foundUser);
-
+    // Aggregate messages from all users, flatten them, and sort by date
     const result = await UserModel.aggregate([
-      { $match: { _id: userId } },
       { $unwind: "$messages" },
-      { $sort: { "messages.createdAt": -1 } },
       {
-        $group: {
-          _id: "$_id",
-          messages: { $push: "$messages" },
+        $project: {
+          _id: 0,
+          messageId: "$messages._id",
+          content: "$messages.content",
+          createdAt: "$messages.createdAt",
+          fromUser: "$username",
         },
       },
+      { $sort: { createdAt: -1 } },
     ]);
-    console.log("Result:", result);
-
-    if (!result?.[0]?.messages?.length) {
-      return Response.json(
-        { success: false, message: "No Messages Found" },
-      );
-    }
 
     return Response.json(
-      { success: true, messages: result[0].messages },
+      {
+        success: true,
+        messages: result,
+      },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Failed to get messages:", error);
+    console.error("Failed to get all messages:", error);
     return Response.json(
       {
         success: false,

@@ -15,7 +15,7 @@ import { Loader2, RefreshCcw } from "lucide-react";
 import MessageCard from "@/components/MessageCard";
 
 import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
-import { Message } from "@/model/User";
+import { Message } from "@/model/User"; // updated Message type
 import { ApiResponse } from "@/types/ApiResponse";
 import { User } from "next-auth";
 
@@ -32,12 +32,13 @@ function DashboardPage() {
   const form = useForm({
     resolver: zodResolver(acceptMessageSchema),
   });
+
   const { control, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
 
   const handleDeleteMessage = (messageId: string) => {
-    setMessages((prevMessages) =>
-      prevMessages.filter((message) => message._id !== messageId)
+    setMessages((prev) =>
+      prev.filter((message) => message._id !== messageId)
     );
   };
 
@@ -131,7 +132,9 @@ function DashboardPage() {
     setIsCopying(true);
     try {
       navigator.clipboard.writeText(profileUrl);
-      toast.success("Profile URL copied to clipboard and Redirecting to your Profile");
+      toast.success(
+        "Profile URL copied to clipboard and Redirecting to your Profile"
+      );
       setTimeout(() => router.push(`/u/${username}`), 1200);
     } catch (error) {
       console.error("Failed to copy URL", error);
@@ -222,7 +225,7 @@ function DashboardPage() {
         {messages.length > 0 ? (
           messages.map((message) => (
             <MessageCard
-              key={message._id}
+              key={message.messageId}
               message={message}
               onMessageDelete={handleDeleteConfirm}
             />
